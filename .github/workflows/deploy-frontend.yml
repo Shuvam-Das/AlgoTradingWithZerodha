@@ -20,6 +20,17 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Debug frontend files
+        working-directory: frontend
+        run: |
+          echo "Node: $(node -v)";
+          echo "NPM: $(npm -v)";
+          echo "PWD: $(pwd)";
+          echo "Listing frontend:";
+          ls -la;
+          echo "package.json contents:";
+          sed -n '1,200p' package.json || true
+
       - name: Build frontend
         working-directory: frontend
         run: npm run build
