@@ -6,7 +6,9 @@ the login URL, login to Kite and allow, then the callback will store access toke
 
 This helper is intentionally minimal and for development only.
 """
+
 import os
+import logging
 import logging
 from flask import Flask, redirect, request
 
