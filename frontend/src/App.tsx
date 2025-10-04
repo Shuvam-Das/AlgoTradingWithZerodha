@@ -1,28 +1,40 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Plotly from 'plotly.js-dist-min';
 
 const WS_URL = 'ws://localhost:8000/ws/ticks'; // Update to your backend websocket URL
 
 export default function App() {
-  const chartRef = useRef(null);
-  const [ticks, setTicks] = useState([]);
+  const chartRef: any = useRef(null);
+  const [ticks, setTicks] = useState<any[]>([]);
 
   useEffect(() => {
-    // Initial dummy data for chart
-    const initialData = [{
-      x: [1, 2, 3, 4, 5],
-      y: [100, 102, 101, 105, 107],
-      type: 'scatter',
-      mode: 'lines+markers',
-      marker: { color: 'blue' },
-      name: 'Price'
-    }];
-    Plotly.newPlot(chartRef.current, initialData, {
-      title: 'Live Price Chart',
-      paper_bgcolor: '#f8f8ff',
-      plot_bgcolor: '#f0f8ff',
-      font: { family: 'Montserrat, sans-serif', size: 16, color: '#222' },
-    });
+    // Lazy-load Plotly to keep the main bundle small
+    let cancelled = false;
+    (async () => {
+      try {
+        const Plotly = (await import('plotly.js-dist-min')).default;
+        if (cancelled) return;
+        const initialData = [{
+          x: [1, 2, 3, 4, 5],
+          y: [100, 102, 101, 105, 107],
+          type: 'scatter',
+          mode: 'lines+markers',
+          marker: { color: 'blue' },
+          name: 'Price'
+        }];
+        Plotly.newPlot(chartRef.current, initialData, {
+          title: 'Live Price Chart',
+          paper_bgcolor: '#f8f8ff',
+          plot_bgcolor: '#f0f8ff',
+          font: { family: 'Montserrat, sans-serif', size: 16, color: '#222' },
+        });
+      } catch (err) {
+        // If Plotly fails to load, leave a message in the chart container
+        if (chartRef.current) chartRef.current.innerHTML = '<p>Failed to load chart library.</p>';
+        // eslint-disable-next-line no-console
+        console.error('Failed to load Plotly:', err);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -33,7 +45,16 @@ export default function App() {
         const data = JSON.parse(event.data);
         setTicks((prev) => [...prev, data]);
         // Update chart with new tick
-        Plotly.extendTraces(chartRef.current, { y: [[data.price]], x: [[data.time]] }, [0]);
+        // Extend traces only if Plotly is available on the element
+        try {
+          // @ts-ignore
+          if (chartRef.current && window.Plotly) {
+            // @ts-ignore
+            window.Plotly.extendTraces(chartRef.current, { y: [[data.price]], x: [[data.time]] }, [0]);
+          }
+        } catch (err) {
+          // ignore errors updating the chart
+        }
       } catch {}
     };
     ws.onerror = () => {};
