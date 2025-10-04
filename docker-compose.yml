@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - '8080:8080'
+    environment:
+      - WEBHOOK_HOST=0.0.0.0
+      - WEBHOOK_PORT=8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  frontend:
+    build: ./frontend
+    ports:
+      - '3000:3000'

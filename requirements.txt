@@ -1,0 +1,19 @@
+
+yfinance>=0.2.24
+pandas>=1.5
+plotly>=5.10
+# kiteconnect optional: pip install kiteconnect
+# nsepy optional: install separately if needed
+streamlit>=1.0
+requests>=2.0
+
+# FastAPI webhook receiver
+fastapi>=0.95
+uvicorn>=0.22
+
+# Dev tools for CI
+mypy>=1.9
+bandit>=1.8
+coverage>=7.2
+
+

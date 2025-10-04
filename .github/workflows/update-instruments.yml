@@ -1,0 +1,51 @@
+name: Update instruments dump
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # daily at 02:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch instruments
+        env:
+          INSTRUMENTS_URL: ${{ secrets.INSTRUMENTS_URL }}
+          KITE_API_KEY: ${{ secrets.KITE_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -n "$INSTRUMENTS_URL" ]; then
+            python -m src.instruments_cli --exchange NSE --out .instruments.csv --url "$INSTRUMENTS_URL"
+          else
+            # Try to fetch using kiteconnect if KITE_API_KEY/secret and access token are configured in secrets
+            python -m src.instruments_cli --exchange NSE --out .instruments.csv || echo "No instruments fetched"
+          fi
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to commit"
+          else
+            git add .instruments.csv
+            git commit -m "chore(ci): update instruments dump"
+            git push
+          fi
