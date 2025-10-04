@@ -26,9 +26,13 @@ def index():
     api_key = os.getenv('KITE_API_KEY')
     if not api_key or KiteConnect is None:
         return "KITE_API_KEY missing or kiteconnect package not installed"
-    kite = KiteConnect(api_key=api_key)
-    login_url = kite.login_url()
-    return redirect(login_url)
+    try:
+        kite = KiteConnect(api_key=api_key)
+        login_url = kite.login_url()
+        return redirect(login_url)
+    except Exception as e:
+        logger.exception("Invalid KITE_API_KEY or error in KiteConnect")
+        return f"Error: {str(e)}. Please check your KITE_API_KEY."
 
 @app.route('/callback')
 def callback():
