@@ -1,0 +1,124 @@
+# Default values for AlgoTradingWithZerodha
+replicaCount: 1
+
+image:
+  repository: atwz-api
+  tag: latest
+  pullPolicy: Always
+
+frontend:
+  repository: atwz-frontend
+  tag: latest
+  pullPolicy: Always
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: trading.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: trading-tls
+      hosts:
+        - trading.example.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+postgresql:
+  enabled: true
+  postgresqlUsername: atwz
+  postgresqlDatabase: atwz
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: true
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+
+secrets:
+  zerodhaApiKey: ""
+  zerodhaApiSecret: ""
+  postgresPassword: ""
+  telegramBotToken: ""
+  smtpPassword: ""
+
+config:
+  logLevel: INFO
+  environment: production
+  timezone: UTC
+  smtp:
+    server: smtp.gmail.com
+    port: 587
+    username: alerts@example.com
+  telegram:
+    enabled: true
+  dataRetention:
+    orders: 90d
+    trades: 365d
+    ticks: 30d
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+  grafanaDashboards:
+    enabled: true
+  alerts:
+    enabled: true
