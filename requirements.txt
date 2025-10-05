@@ -1,19 +1,63 @@
 
+# Core dependencies
 yfinance>=0.2.24
 pandas>=1.5
+numpy>=1.21
+scikit-learn>=1.0
+tensorflow>=2.13.0
+torch>=2.0.0
 plotly>=5.10
-# kiteconnect optional: pip install kiteconnect
-# nsepy optional: install separately if needed
-streamlit>=1.0
+matplotlib>=3.7.0
+bokeh>=3.0.0
+dash>=2.9.0
+TA-Lib>=0.4.24
+statsmodels>=0.14.0
+prophet>=1.1.4
 requests>=2.0
-
-# FastAPI webhook receiver
+beautifulsoup4>=4.12.0
 fastapi>=0.95
-uvicorn>=0.22
+flask>=2.3.0
 
-# Dev tools for CI
+# Streaming and WebSocket
+websockets>=11.0
+websocket-client>=1.6.0
+
+# Database
+sqlalchemy>=2.0
+psycopg2-binary>=2.9.0
+aioredis>=2.0.0
+
+# Authentication and Security
+pyjwt>=2.8.0
+cryptography>=41.0.0
+python-jose>=3.3.0
+passlib>=1.7.0
+python-multipart>=0.0.6
+
+# Notifications
+sendgrid>=6.10.0
+python-telegram-bot>=20.3
+
+# Testing and Development
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+coverage>=7.2
 mypy>=1.9
 bandit>=1.8
-coverage>=7.2
+black>=23.7.0
+flake8>=6.1.0
+
+# Documentation
+sphinx>=7.1.0
+mkdocs>=1.5.0
+
+# Server
+uvicorn>=0.22
+gunicorn>=21.2.0
+
+# Optional: Broker-specific
+kiteconnect>=5.0.0
+nsepy>=0.8
+streamlit>=1.0
 
 
