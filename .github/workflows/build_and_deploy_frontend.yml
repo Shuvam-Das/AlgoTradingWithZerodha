@@ -1,0 +1,72 @@
+name: Build and Deploy Frontend
+
+on:
+  push:
+    branches:
+      - Sathi_Nag
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: |
+          npm ci
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: |
+          npm run build
+
+      - name: Attempt auto-fix on build failure
+        if: failure()
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run CI fix and retry build
+        if: failure()
+        run: |
+          python3 ./scripts/ci_fix_and_redeploy.py
+        shell: bash
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/dist
+          publish_branch: gh-pages
+          allow_empty_commit: true
+
+      - name: Comment PR with preview link
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            // branch name from ref
+            const branch = process.env.GITHUB_REF.replace('refs/heads/', '');
+            const previewUrl = `https://${owner}.github.io/${repo}/`;
+
+            // find open PR where head matches this branch
+            const pulls = await github.rest.pulls.list({ owner, repo, state: 'open' });
+            const pr = pulls.data.find(p => p.head && p.head.ref === branch);
+            if (pr) {
+              const body = `✅ Preview deployed for branch **${branch}**:\n\n${previewUrl}\n\nIf this looks good, merge the PR to publish to the default site.`;
+              await github.rest.issues.createComment({ owner, repo, issue_number: pr.number, body });
+              core.info(`Commented PR #${pr.number} with preview link.`);
+            } else {
+              core.info('No open PR found for this branch, skipping PR comment.');
+            }
